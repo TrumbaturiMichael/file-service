@@ -1,8 +1,7 @@
 const crypto = require('crypto');
 const algorithm = 'aes-256-ctr';
 
-exports.getHashByBuffer = function (buffer)
-{
+exports.getHashByBuffer = function (buffer) {
     const hashSum = crypto.createHash('sha256');
     hashSum.update(buffer);
     return hashSum.digest('hex');

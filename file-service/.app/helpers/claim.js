@@ -1,7 +1,5 @@
-class Claim
-{
-  constructor(data) 
-  {
+class Claim {
+  constructor(data) {
     this.auth = data.auth;
     this.userid = data.userid;
     this.role = data.role;
@@ -9,23 +7,19 @@ class Claim
     this.hop = data.hop;
   }
 
-  isAuthenticated()
-  {
+  isAuthenticated() {
     return this.auth;
   }
 
-  reduceHop()
-  {
+  reduceHop() {
     this.hop--;
   }
 
-  setService(serviceName)
-  {
+  setService(serviceName) {
     this.service = serviceName;
   }
 
-  getUserId()
-  {
+  getUserId() {
     return this.userid != -1 ? this.userid : null;
   }
 }

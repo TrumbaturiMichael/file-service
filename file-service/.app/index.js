@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 const ENDPOINT = process.env.ENDPOINT || '/files';
 
 app.listen(PORT, HOST, () => {
-    console.log(`${process.env.NAME} is starting`);
+    console.log(`${process.env.HOST} is starting`);
 }); 
 
 //Application middleware to manage authorization
@@ -29,21 +29,21 @@ app.use((req, res, next) => {
 
     const verified = jwt.verify(token, jwtSecretKey);
 
-    if(verified){
+    if (verified) {
         var decodedToken = jwt.decode(token);
 
         var claim = new Claim(decodedToken.data);
         claim.reduceHop();
-        claim.setService(process.env.NAME);
+        claim.setService(process.env.HOST);
 
         res.authorization = jwt.sign({data: claim, exp: decodedToken.exp}, jwtSecretKey);
 
-        if(req.url == "/"){
+        if(req.url == "/") {
             return res.sendStatus(200);
         }
         
         next();
-    }else{
+    } else {
         return res.sendStatus(503); //return res.status(401).send("Access Denied");
     }
 })
