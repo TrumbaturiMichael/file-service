@@ -2,11 +2,14 @@ FROM node:18.7.0
 
 WORKDIR /app
 
-COPY ../package*.json ./
+COPY .app/package*.json ./
+
+RUN mkdir .config
+RUN mkdir .appData
 
 RUN npm install
 
-COPY . .
+COPY .app/ .
 
 EXPOSE 3000
 
