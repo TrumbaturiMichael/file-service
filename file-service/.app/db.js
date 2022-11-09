@@ -63,8 +63,8 @@ function createViewIfNotExists(dbConnection, next) {
     SELECT 
       originalFileName, 
       createdAd, 
-      CAST(CONCAT('http://${process.env.HOST}:${process.env.PORT}${process.env.ENDPOINT}/download?uid=', uid) AS char(255)) AS downloadLink, 
-      CAST(CONCAT('http://${process.env.HOST}:${process.env.PORT}${process.env.ENDPOINT}/delete?uid=', uid) AS Char(255)) AS deleteLink
+      CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/download?uid=', uid) AS char(255)) AS downloadLink, 
+      CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/delete?uid=', uid) AS Char(255)) AS deleteLink
     FROM Files
   `);
 
