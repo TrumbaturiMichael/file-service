@@ -7,11 +7,11 @@ exports.executeQuery = function executeQuery(query, params, next) {
     }
 
     connection.query(query, params, function(err, result) {
-        if (err) {
-          throw "Internal Error! " + err;
-        }
+        // if (err) {
+        //   throw "Internal Error! " + err;
+        // }
         
-        next(result);
+        next(err, result);
         connection.release();
     });
   });
