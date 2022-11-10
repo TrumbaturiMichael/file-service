@@ -3,9 +3,11 @@ const fileupload = require("express-fileupload");
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config({path: './.config/.env'});
 const Claim = require('./helpers/claim');
-const { reset, blue, red, yellow } = require('./helpers/consoleColor');
+const { reset, blue, red, yellow } = require('./constants/consoleColor');
 const fileRoute = require('./routes/file');
 const app = express();
+
+//#region CONSOLE
 
 (function(){
     var _log = console.log;
@@ -13,8 +15,13 @@ const app = express();
     var _warn = console.warn;
     var _error = console.error;
   
-    console.log = function(message){
+    console.debug = function(message){
         message = `[DEBUG] - ${message}`;
+        if(process.env.DEBUG)
+            _log.apply(console,arguments);
+    };
+
+    console.log = function(message){
         if(process.env.DEBUG)
             _log.apply(console,arguments);
     };
@@ -28,13 +35,15 @@ const app = express();
     console.warn = function(message){
         message = `${yellow}[WARNING] - ${message}${reset}`;
         _warn.apply(console,arguments);
-     };
+    };
 
     console.error = function(message){
         message = `${red}[ERROR] - ${message}${reset}`;
        _error.apply(console,arguments);
     };    
 })();
+
+//#endregion CONSOLE
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

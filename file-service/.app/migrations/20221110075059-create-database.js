@@ -26,22 +26,26 @@ exports.up = function(db) {
 
 function createFilesView(db, err) {
   if(err && err.length > 0) {
-    console.error(`[${seed}] Cannot create table Files`);
+    console.error(`Cannot create table Files`);
     throw err;
   }  
 
-  console.info(`[${seed}] TABLE Files Created`);
+  console.info(`TABLE Files Created`);
 
   return db.runSql(`
     CREATE OR REPLACE VIEW FilesView AS
     SELECT 
-      originalFileName, 
-      createdAd, 
+      CAST(uid AS CHAR(36)) AS uid,
+      originalFileName,
+      createdAd,
+      hash,
+      CAST(ownerUID AS CHAR(36)) AS ownerUID,
+      Permission,
       CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/download?uid=', uid) AS char(255)) AS downloadLink, 
       CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/delete?uid=', uid) AS Char(255)) AS deleteLink
     FROM Files
   `, function(){
-    console.info(`[${seed}] VIEW FilesView Created`);
+    console.info(`VIEW FilesView Created`);
   });
 };
 

@@ -6,11 +6,7 @@ exports.executeQuery = function executeQuery(query, params, next) {
       throw "Internal Error! " + err;
     }
 
-    connection.query(query, params, function(err, result) {
-        // if (err) {
-        //   throw "Internal Error! " + err;
-        // }
-        
+    connection.query(query, params, function(err, result) {        
         next(err, result);
         connection.release();
     });

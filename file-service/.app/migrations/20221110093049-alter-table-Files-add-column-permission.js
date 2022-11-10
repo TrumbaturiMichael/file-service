@@ -22,6 +22,17 @@ exports.up = function(db) {
     }  
   
     console.info(`ADDED COLUMN Permission ON TABLE Files`);
+
+    return db.runSql(`
+    CREATE OR REPLACE VIEW FilesView AS
+    SELECT 
+      *,
+      CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/download?uid=', uid) AS char(255)) AS downloadLink, 
+      CAST(CONCAT('http://localhost:2000${process.env.ENDPOINT}/delete?uid=', uid) AS Char(255)) AS deleteLink
+    FROM Files
+  `, function(){
+    console.info(`VIEW FilesView replaced`);
+  });
   });
 };
 

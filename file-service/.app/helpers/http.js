@@ -25,7 +25,7 @@ exports.reply = function(response, msg) {
     }
 
     response.status(code).send(message);
-}
+};
 
 exports.triggeredException = function (response, e) {
     var error = e;
@@ -34,5 +34,5 @@ exports.triggeredException = function (response, e) {
         error = new FileException(500, e);
     }
   
-    responseHelper.reply(response, error);
-}
+    this.reply(response, error);
+};
