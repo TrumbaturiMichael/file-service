@@ -4,13 +4,16 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config({path: './.config/.env'});
 const Claim = require('./helpers/claim');
 const { reset, blue, red, yellow } = require('./constants/consoleColor');
-const getRoute = require('./routes/get');
-const downloadRoute = require('./routes/download');
-const renameRoute = require('./routes/rename');
-const changeOwnershipRoute = require('./routes/changeOwnership');
-const uploadRoute = require('./routes/upload');
-const deleteRoute = require('./routes/delete');
-const systemRoute = require('./routes/system');
+const getRoute = require('./routes/files/get');
+const downloadRoute = require('./routes/files/download');
+const renameRoute = require('./routes/files/rename');
+const changeOwnershipRoute = require('./routes/files/permission/changeOwnership');
+const getPermissionRoute = require('./routes/files/permission/get');
+const insertPermissionRoute = require('./routes/files/permission/insert');
+const updatePermissionRoute = require('./routes/files/permission/update');
+const uploadRoute = require('./routes/files/upload');
+const deleteRoute = require('./routes/files/delete');
+const systemRoute = require('./routes/system/system');
 const app = express();
 
 //#region CONSOLE
@@ -97,6 +100,8 @@ app.use((req, res, next) => {
     }
 })
 
+//#region FILES
+
 // GET /files get all visible file by request user
 app.get(ENDPOINT, getRoute.get);
 
@@ -115,20 +120,39 @@ app.get(ENDPOINT + '/:uid/download', downloadRoute.download);
 //PUT /files/rename
 app.put(ENDPOINT + '/:uid/rename', renameRoute.rename);
 
-//PUT /files/changeOwnership
-app.put(ENDPOINT + '/:uid/changeOwnership', changeOwnershipRoute.changeOwnership);
-
 //POST /files/upload
 app.post(ENDPOINT + '/upload', uploadRoute.upload);
 
 //DELETE /files/:id
 app.delete(ENDPOINT + '/:uid', deleteRoute.delete);
 
+//#region PERMISSION
+
+//PUT /files/:uid/changeOwnership
+app.put(ENDPOINT + '/:uid/changeOwnership', changeOwnershipRoute.changeOwnership);
+
+//GET /files/:uid/permission
+app.get(ENDPOINT + '/:uid/permission', getPermissionRoute.get);
+
+//POST /files/:uid/permission/add
+app.post(ENDPOINT + '/:uid/permission/add', insertPermissionRoute.insert);
+
+//PUT /files/:uid/permission/update
+app.put(ENDPOINT + '/:uid/permission/update', updatePermissionRoute.update);
+
+//#endregion PERMISSION
+
+//#endregion FILES
+
+//#region SYSTEM
+
 // GET /files/system/freeSpace
 app.get(ENDPOINT + '/system/freeSpace', systemRoute.diskAvailable);
 
 // GET /files/system/usedSpace
 app.get(ENDPOINT + '/system/usedSpace', systemRoute.diskUsage);
+
+//#endregion SYSTEM
 
 app.on('error', onError);
 app.on('listening', onListening);

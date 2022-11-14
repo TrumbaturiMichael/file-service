@@ -1,11 +1,11 @@
 const fs = require('fs');
-const FileModel = require('../models/file');
-const FileRolePermissionModel = require('../models/fileRolePermission');
-const FileException = require('../helpers/fileException');
-const db = require('../helpers/db');
-const hash = require('../helpers/hash');
+const FileModel = require('../../models/file');
+const FileRolePermissionModel = require('../../models/fileRolePermission');
+const FileException = require('../../helpers/fileException');
+const db = require('../../helpers/db');
+const hash = require('../../helpers/hash');
 const { randomUUID } = require('crypto');
-const responseHelper = require('../helpers/http');
+const responseHelper = require('../../helpers/http');
 const FILE_PATH = process.env.FILE_PATH;
 
 var ownerUserId;

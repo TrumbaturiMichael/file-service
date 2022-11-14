@@ -1,21 +1,19 @@
-const fs = require('fs');
-const FileException = require('../helpers/fileException');
-const db = require('../helpers/db');
-const responseHelper = require('../helpers/http');
-const permissionHelper = require('../constants/permission');
-const FILE_PATH = process.env.FILE_PATH;
+const FileException = require('../../../helpers/fileException');
+const db = require('../../../helpers/db');
+const responseHelper = require('../../../helpers/http');
+const permissionHelper = require('../../../constants/permission');
 
 var ownerUserId;
 var ownerRoleId;
 var uid;
 
-exports.delete = function(request, response) {    
+exports.get = function(request, response) {    
     try {
         check(request);
 
-        console.debug("Delete request: " + uid);
+        console.debug("Get permission request: " + uid);
 
-        checkPermissionAndDelete(request, response);
+        checkPermissionAndGet(request, response);
     } 
     catch (e) {
         responseHelper.triggeredException(response, e);
@@ -37,7 +35,7 @@ function check (request) {
     }
 }
 
-function checkPermissionAndDelete (request, response) {
+function checkPermissionAndGet (request, response) {
     db.executeQuery(`SELECT  
 	                    ownerUID, userId, roleId, permission
                     FROM 
@@ -59,7 +57,7 @@ function checkPermissionAndDelete (request, response) {
             var isOwner = parseInt(rows[0].ownerUID) == parseInt(ownerUserId);
 
             if (isOwner) {
-                return removeFile(request, response);
+                return getPermission(request, response);
             }
             
             var permissionRole = null;
@@ -82,49 +80,33 @@ function checkPermissionAndDelete (request, response) {
 
             var permission = permissionUser ?? permissionRole ?? permissionHelper.n;
 
-            if (!permissionHelper.canWrite(permission)) {
+            if (!permissionHelper.canRead(permission)) {
                 console.error(err);
                 responseHelper.triggeredException(response, new FileException(403, "Unauthorized"));
                 return;
             }
 
-            removeFile(request, response);
+            getPermission(request, response);
         }
     );
 }
 
-function removeFile (request, response) {
-    fs.rm(FILE_PATH + uid, function (err) {
+function getPermission (request, response) {
+    db.executeQuery(`
+        SELECT NULL AS roleId, CAST(ownerUID AS CHAR(36)) AS userId, 8 AS permissionCode FROM Files WHERE uid = ? 
+        UNION ALL
+        SELECT roleId, userId, permission as permissionCode FROM FilesRolesPermission WHERE fileId = ?`, [uid, uid], 
+    function(err, rows) {
         if (err) {
             console.error(err);
-            responseHelper.triggeredException(response, new FileException(500, "Cannot remove file"));
+            responseHelper.triggeredException(response, new FileException(500, "Cannot get file permission"));
             return;
         }
-        
-        deleteFileRolePermission(request, response);
-    });
-}
 
-function deleteFileRolePermission (request, response) {
-    db.executeQuery(`DELETE FROM FilesRolesPermission WHERE fileId = ?`, [uid], function(err, res) {
-        if (err) {
-            console.error(err);
-            responseHelper.triggeredException(response, new FileException(500, "Cannot delete files permission"));
-            return;
+        for (var i in rows) {
+            rows[i].permission = permissionHelper.permission[rows[i].permissionCode];
         }
         
-        deleteFile(request, response);
-    });
-}
-
-function deleteFile (request, response) {
-    db.executeQuery(`DELETE FROM Files WHERE uid = ?`, [uid], function(err, res) {
-        if (err) {
-            console.error(err);
-            responseHelper.triggeredException(response, new FileException(500, "Cannot delete files"));
-            return;
-        }
-        
-        responseHelper.reply(response, "Deleted: " + uid);
+        responseHelper.reply(response, rows);
     });
 }

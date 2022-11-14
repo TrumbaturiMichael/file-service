@@ -1,7 +1,7 @@
-const FileException = require('../helpers/fileException');
-const db = require('../helpers/db');
-const responseHelper = require('../helpers/http');
-const permissionHelper = require('../constants/permission');
+const FileException = require('../../../helpers/fileException');
+const db = require('../../../helpers/db');
+const responseHelper = require('../../../helpers/http');
+const permissionHelper = require('../../../constants/permission');
 
 var ownerUserId;
 var ownerRoleId;

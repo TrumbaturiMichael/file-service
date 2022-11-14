@@ -1,7 +1,7 @@
 const fs = require('fs');
-const FileException = require('../helpers/fileException');
-const db = require('../helpers/db');
-const responseHelper = require('../helpers/http');
+const FileException = require('../../helpers/fileException');
+const db = require('../../helpers/db');
+const responseHelper = require('../../helpers/http');
 const { default: axios } = require('axios');
 const FILE_PATH = process.env.FILE_PATH;
 
@@ -113,7 +113,7 @@ function executeQuery (request, response, sqlQuery) {
         }
 
         if (!rows || rows.length == 0) {
-            console.error(err);
+            console.error(rows);
             responseHelper.triggeredException(response, new FileException(400, "File not found"));
             return;
         }

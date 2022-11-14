@@ -1,20 +1,22 @@
-const FileException = require('../helpers/fileException');
-const db = require('../helpers/db');
-const responseHelper = require('../helpers/http');
-const permissionHelper = require('../constants/permission');
+const fs = require('fs');
+const FileException = require('../../helpers/fileException');
+const db = require('../../helpers/db');
+const hash = require('../../helpers/hash');
+const responseHelper = require('../../helpers/http');
+const permissionHelper = require('../../constants/permission');
+const FILE_PATH = process.env.FILE_PATH;
 
 var ownerUserId;
 var ownerRoleId;
 var uid;
-var name;
 
-exports.rename = function(request, response) {    
-    try {
+exports.download = function(request, response) {
+    try{
         check(request);
 
-        console.debug("Rename request: " + uid);
-
-        checkPermissionAndRename(request, response);
+        console.debug("Download request: " + uid);
+        
+        checkPermissionAndDownload(request, response);
     } 
     catch (e) {
         responseHelper.triggeredException(response, e);
@@ -34,17 +36,11 @@ function check (request) {
     if(!uid) {
         throw new FileException(400, "File uid parameter is missing");
     }
-    
-    name = request.body && request.body.name ? request.body.name : null;
-
-    if(!name) {
-        throw new FileException(400, "File name parameter is missing");
-    }
 }
 
-function checkPermissionAndRename (request, response) {
+function checkPermissionAndDownload (request, response) {
     db.executeQuery(`SELECT  
-	                    ownerUID, userId, roleId, permission
+                        ownerUID, userId, roleId, permission
                     FROM 
                         FilesView
                     WHERE uid = ? AND (ownerUID = ? OR ((userId IS NULL OR userId = ?) AND (roleId IS NULL OR roleId = ?)))`, [uid, ownerUserId, ownerUserId, ownerRoleId], 
@@ -64,7 +60,7 @@ function checkPermissionAndRename (request, response) {
             var isOwner = parseInt(rows[0].ownerUID) == parseInt(ownerUserId);
 
             if (isOwner) {
-                return renameFile(request, response);
+                return downloadFile(request, response, rows[0].ownerUID, rows[0].originalFileName);
             }
             
             var permissionRole = null;
@@ -87,25 +83,42 @@ function checkPermissionAndRename (request, response) {
 
             var permission = permissionUser ?? permissionRole ?? permissionHelper.n;
 
-            if (!permissionHelper.canWrite(permission)) {
+            if (!permissionHelper.canExecute(permission)) {
                 console.error(err);
                 responseHelper.triggeredException(response, new FileException(403, "Unauthorized"));
                 return;
             }
 
-            renameFile(request, response);
+            downloadFile(request, response, rows[0].ownerUID, rows[0].originalFileName);
         }
     );
 }
 
-function renameFile (request, response) {
-    db.executeQuery(`UPDATE Files SET originalFileName = ? WHERE uid = ?`, [name, uid], function(err, res) {
-        if (err) {
-            console.error(err);
-            responseHelper.triggeredException(response, new FileException(500, "Cannot rename file"));
-            return;
-        }
-        
-        responseHelper.reply(response, "Renamed: " + uid);
+function downloadFile (request, response, ownerUID, originalFileName) {
+    const file = FILE_PATH + uid;
+
+    fs.promises.readFile(file).then((encryptedContent) => {
+        // var encryptedContent = fs.readFileSync(file);
+        var decrypted = hash.decrypt(encryptedContent, ownerUID.toString().replace(/\0/g, '')).toString('utf8');
+
+        var tempFile = FILE_PATH + originalFileName;
+
+        fs.writeFile(tempFile, decrypted, function (err) {
+            if (err) {
+                console.error(err);
+                responseHelper.triggeredException(response, new FileException(500, "Internal error"));
+                return;
+            }
+
+            response.download(tempFile, originalFileName);
+
+            fs.rm(tempFile, function (err) {
+                if (err) return console.error(err);
+            });
+        });
+    }).catch((err) => {
+        console.error(err)
+        responseHelper.triggeredException(response, new FileException(500, "Internal error (cannot get file)"));
+        return;
     });
 }

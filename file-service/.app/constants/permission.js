@@ -7,7 +7,7 @@ module.exports.rx = 5; //read & execute
 module.exports.rw = 6; //read & write
 module.exports.rwx = 7; //read & execute & write
 
-module.exports.permission = ["n", "x", "w", "wx", "r", "rx", "rw", "rwx"];
+module.exports.permission = ["n", "x", "w", "wx", "r", "rx", "rw", "rwx", "owner"];
 module.exports.permissionObj = {n: this.n, x: this.x, w: this.w, wx: this.wx, r: this.r, rx: this.rx, rw: this.rw, rwx: this.rwx}; 
 
 module.exports.canExecute = function (permission) {

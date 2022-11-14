@@ -1,5 +1,5 @@
 const { exec } = require("child_process");
-const responseHelper = require('../helpers/http');
+const responseHelper = require('../../helpers/http');
 
 exports.diskUsage = function(request, response) {
     try{
