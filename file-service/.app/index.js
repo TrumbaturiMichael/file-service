@@ -4,7 +4,13 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv').config({path: './.config/.env'});
 const Claim = require('./helpers/claim');
 const { reset, blue, red, yellow } = require('./constants/consoleColor');
-const fileRoute = require('./routes/file');
+const getRoute = require('./routes/get');
+const downloadRoute = require('./routes/download');
+const renameRoute = require('./routes/rename');
+const changeOwnershipRoute = require('./routes/changeOwnership');
+const uploadRoute = require('./routes/upload');
+const deleteRoute = require('./routes/delete');
+const systemRoute = require('./routes/system');
 const app = express();
 
 //#region CONSOLE
@@ -81,7 +87,8 @@ app.use((req, res, next) => {
         }
 
         if(claim.isAuthenticated()) {
-            req.body.userId = claim.getUserId();
+            req.body.ownerUserId = claim.getUserId();
+            req.body.ownerRoleId = claim.getRoleId();
         }
         
         next();
@@ -90,23 +97,38 @@ app.use((req, res, next) => {
     }
 })
 
-// GET /files get all owned file and all public file
-app.get(ENDPOINT, fileRoute.get);
+// GET /files get all visible file by request user
+app.get(ENDPOINT, getRoute.get);
 
-// GET /files/user/:userId get all file visible by the parameter user (public and owned by him)
-app.get(ENDPOINT + '/user/:userId', fileRoute.get);
+// GET /files/user/:userId get all file visible by the parameter user
+app.get(ENDPOINT + '/user/:userId', getRoute.get);
+
+// GET /files/role/:roleId get all file visible by the parameter role
+app.get(ENDPOINT + '/role/:roleId', getRoute.get);
 
 //GET /files/:uid to get file info
-app.get(ENDPOINT + '/:uid', fileRoute.get);
+app.get(ENDPOINT + '/:uid', getRoute.get);
 
 //GET /files/:uid/download
-app.get(ENDPOINT + '/:uid/download', fileRoute.download);
+app.get(ENDPOINT + '/:uid/download', downloadRoute.download);
+
+//PUT /files/rename
+app.put(ENDPOINT + '/:uid/rename', renameRoute.rename);
+
+//PUT /files/changeOwnership
+app.put(ENDPOINT + '/:uid/changeOwnership', changeOwnershipRoute.changeOwnership);
 
 //POST /files/upload
-app.post(ENDPOINT + '/upload', fileRoute.upload);
+app.post(ENDPOINT + '/upload', uploadRoute.upload);
 
 //DELETE /files/:id
-app.delete(ENDPOINT + '/:id', fileRoute.delete);
+app.delete(ENDPOINT + '/:uid', deleteRoute.delete);
+
+// GET /files/system/freeSpace
+app.get(ENDPOINT + '/system/freeSpace', systemRoute.diskAvailable);
+
+// GET /files/system/usedSpace
+app.get(ENDPOINT + '/system/usedSpace', systemRoute.diskUsage);
 
 app.on('error', onError);
 app.on('listening', onListening);

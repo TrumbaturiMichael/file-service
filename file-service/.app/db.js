@@ -15,23 +15,32 @@ var dbm = dbmigrate.getInstance(true, {
 });
 
 connectionPool.getConnection(function(err, connection) {
-    console.info("Starting database migrations!");
+  console.info("Starting database migrations!");
 
-    if (err) {
-      if(err.code == 'ER_BAD_DB_ERROR') {
-        dbm.createDatabase(process.env.MYSQL_DB)
-        .then(function(err){
+  if (err) {
+    if(err.code == 'ER_BAD_DB_ERROR') {
+      var connectionPoolDB = mysql.createPool({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_ROOT_USER,
+        password: process.env.MYSQL_ROOT_PASSWORD
+      });
+
+      connectionPoolDB.getConnection(function(err, connectionDB) {
+        connectionDB.query(`CREATE DATABASE ${process.env.MYSQL_DB}`, function(err, result) {
           if (err) throw err;
+          connectionDB.release();
+          dbm.up();
         });
-      }
-      else {
-        throw err;
-      }
+      });
     }
     else {
-      connection.release();
-      dbm.up();
+      throw err;
     }
+  }
+  else {
+    connection.release();
+    dbm.up();
+  }
 });
 
 module.exports = connectionPool;

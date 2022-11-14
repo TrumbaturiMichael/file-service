@@ -22,6 +22,10 @@ class Claim {
   getUserId() {
     return this.userid != -1 ? this.userid : null;
   }
+
+  getRoleId() {
+    return this.role != 0 ? this.role : null;
+  }
 }
 
 module.exports = Claim;
